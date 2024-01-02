@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-const PayOSBaseUrl = "https://dev.api-merchant.payos.vn"
+const PayOSBaseUrl = "https://api-merchant.payos.vn"
 
 var PayOSClientId string
 var PayOSApiKey string
