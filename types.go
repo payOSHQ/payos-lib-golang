@@ -35,6 +35,7 @@ type CheckoutResponseDataType struct {
 	Amount        int    `json:"amount"`
 	Description   string `json:"description"`
 	OrderCode     int    `json:"orderCode"`
+	Currency      string `json:"currency"`
 	PaymentLinkId string `json:"paymentLinkId"`
 	Status        string `json:"status"`
 	CheckoutUrl   string `json:"checkoutUrl"`
@@ -90,6 +91,7 @@ type WebhookDataType struct {
 	AccountNumber          string  `json:"accountNumber"`
 	Reference              string  `json:"reference"`
 	TransactionDateTime    string  `json:"transactionDateTime"`
+	Currency               string  `json:"currency"`
 	PaymentLinkId          string  `json:"paymentLinkId"`
 	Code                   string  `json:"code"`
 	Desc                   string  `json:"desc"`
