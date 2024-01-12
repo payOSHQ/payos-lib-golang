@@ -62,7 +62,7 @@ func SortObjByKey(obj interface{}) (string, error) {
 	for _, key := range keys {
 		value := jsonObj[key]
 		if value != nil {
-			sortedPairs = append(sortedPairs, fmt.Sprintf("%s=%v", key, value))
+			sortedPairs = append(sortedPairs, fmt.Sprintf("%s=%v", key, convertToString(value)))
 		} else {
 			sortedPairs = append(sortedPairs, fmt.Sprintf("%s=", key))
 		}
@@ -71,4 +71,15 @@ func SortObjByKey(obj interface{}) (string, error) {
 	sortedObj := strings.Join(sortedPairs, "&")
 
 	return sortedObj, nil
+}
+
+func convertToString(value interface{}) string {
+	switch v := value.(type) {
+	case int:
+		return strconv.Itoa(v)
+	case float64:
+		return strconv.FormatFloat(v, 'f', -1, 64)
+	default:
+		return fmt.Sprint(value)
+	}
 }
