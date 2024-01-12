@@ -11,3 +11,7 @@
 ## 1.0.2 - 2024-01-09
 
 - Fix: Add `Currency` to `CheckoutResponseDataType` and `WebhookDataType`
+
+## 1.0.3 - 2024-01-12
+
+- Fix: Convert numbers to strings in signature
