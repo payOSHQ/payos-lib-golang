@@ -9,6 +9,7 @@ const (
 	UnauthorizedErrorMessage        = "Unauthorized."
 	InternalServerErrorErrorMessage = "Internal Server Error."
 	InvalidParameterErrorMessage    = "Invalid Parameter."
+	OrderCodeOuOfRange              = "orderCode is out of range."
 )
 
 const (

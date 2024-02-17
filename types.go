@@ -14,7 +14,7 @@ type Item struct {
 }
 
 type CheckoutRequestType struct {
-	OrderCode    int     `json:"orderCode"`
+	OrderCode    int64   `json:"orderCode"`
 	Amount       int     `json:"amount"`
 	Description  string  `json:"description"`
 	CancelUrl    string  `json:"cancelUrl"`
@@ -34,7 +34,7 @@ type CheckoutResponseDataType struct {
 	AccountName   string `json:"accountName"`
 	Amount        int    `json:"amount"`
 	Description   string `json:"description"`
-	OrderCode     int    `json:"orderCode"`
+	OrderCode     int64  `json:"orderCode"`
 	Currency      string `json:"currency"`
 	PaymentLinkId string `json:"paymentLinkId"`
 	Status        string `json:"status"`
@@ -52,7 +52,7 @@ type ConfirmWebhookRequestType struct {
 
 type PaymentLinkDataType struct {
 	Id                 string            `json:"id"`
-	OrderCode          int               `json:"orderCode"`
+	OrderCode          int64             `json:"orderCode"`
 	Amount             int               `json:"amount"`
 	AmountPaid         int               `json:"amontPaid"`
 	AmountRemaining    int               `json:"amountRemaining"`
@@ -85,7 +85,7 @@ type WebhookType struct {
 }
 
 type WebhookDataType struct {
-	OrderCode              int     `json:"orderCode"`
+	OrderCode              int64   `json:"orderCode"`
 	Amount                 int     `json:"amount"`
 	Description            string  `json:"description"`
 	AccountNumber          string  `json:"accountNumber"`

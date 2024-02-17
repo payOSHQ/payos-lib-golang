@@ -69,6 +69,12 @@ func CreatePaymentLink(paymentData CheckoutRequestType) (*CheckoutResponseDataTy
 			return nil, NewPayOSError(InvalidParameterErrorCode, msgError)
 		}
 	}
+
+	// orderCode in range [-2^53+1, 2^53 -1]
+	if paymentData.OrderCode < -9007199254740991 || paymentData.OrderCode > 9007199254740991 {
+		return nil, NewPayOSError(InvalidParameterErrorCode, OrderCodeOuOfRange)
+	}
+
 	url := fmt.Sprintf("%s/v2/payment-requests", PayOSBaseUrl)
 	signaturePaymentRequest, _ := CreateSignatureOfPaymentRequest(paymentData, PayOSChecksumKey)
 	paymentData.Signature = &signaturePaymentRequest

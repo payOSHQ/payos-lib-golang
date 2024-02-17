@@ -30,7 +30,7 @@ func CreateSignatureFromObj(obj interface{}, key string) (string, error) {
 
 func CreateSignatureOfPaymentRequest(data CheckoutRequestType, key string) (string, error) {
 	dataStr := fmt.Sprintf("amount=%s&cancelUrl=%s&description=%s&orderCode=%s&returnUrl=%s",
-		strconv.Itoa(data.Amount), data.CancelUrl, data.Description, strconv.Itoa(data.OrderCode), data.ReturnUrl)
+		strconv.Itoa(data.Amount), data.CancelUrl, data.Description, strconv.FormatInt(data.OrderCode, 10), data.ReturnUrl)
 
 	hasher := hmac.New(sha256.New, []byte(key))
 	hasher.Write([]byte(dataStr))
@@ -75,8 +75,8 @@ func SortObjByKey(obj interface{}) (string, error) {
 
 func convertToString(value interface{}) string {
 	switch v := value.(type) {
-	case int:
-		return strconv.Itoa(v)
+	case int64:
+		return strconv.FormatInt(v, 10)
 	case float64:
 		return strconv.FormatFloat(v, 'f', -1, 64)
 	default:

@@ -15,3 +15,7 @@
 ## 1.0.3 - 2024-01-12
 
 - Fix: Convert numbers to strings in signature
+
+## 1.0.4 - 2024-02-17
+
+- Fix: Change type of `orderCode` to `int64`
