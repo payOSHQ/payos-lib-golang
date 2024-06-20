@@ -54,7 +54,7 @@ type PaymentLinkDataType struct {
 	Id                 string            `json:"id"`
 	OrderCode          int64             `json:"orderCode"`
 	Amount             int               `json:"amount"`
-	AmountPaid         int               `json:"amontPaid"`
+	AmountPaid         int               `json:"amountPaid"`
 	AmountRemaining    int               `json:"amountRemaining"`
 	Status             string            `json:"status"`
 	CreateAt           string            `json:"createAt"`
