@@ -23,7 +23,10 @@ import (
 )
 
 func main(){
-    payos.Key(clientId, apiKey,checksumKey)
+    payos.Key(clientId, apiKey, checksumKey)
+    // or
+    payos.Key(clientId, apiKey, checksumKey, partnerCode)
+    
     body := CheckoutRequestType{
 		OrderCode:   12345,
 		Amount:      2000,

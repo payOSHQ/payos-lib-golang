@@ -15,15 +15,22 @@ const PayOSBaseUrl = "https://api-merchant.payos.vn"
 var PayOSClientId string
 var PayOSApiKey string
 var PayOSChecksumKey string
+var PayOSPartnerCode string
 
-// Set ClientId, APIKey, ChecksumKey
-func Key(clientId string, apiKey string, checksumKey string) error {
+// Set ClientId, APIKey, ChecksumKey and PartnerCode(a string, optional)
+func Key(clientId string, apiKey string, checksumKey string, partnerCode ...string) error {
 	if clientId == "" || apiKey == "" || checksumKey == "" {
 		return errors.New("invalid key")
+	}
+	if len(partnerCode) > 1 {
+		return errors.New("invalid partner code")
 	}
 	PayOSClientId = clientId
 	PayOSApiKey = apiKey
 	PayOSChecksumKey = checksumKey
+	if len(partnerCode) == 1 {
+		PayOSPartnerCode = partnerCode[0]
+	}
 	return nil
 }
 
@@ -91,6 +98,9 @@ func CreatePaymentLink(paymentData CheckoutRequestType) (*CheckoutResponseDataTy
 	req.Header.Set("x-client-id", PayOSClientId)
 	req.Header.Set("x-api-key", PayOSApiKey)
 	req.Header.Set("Content-Type", "application/json")
+	if PayOSPartnerCode != "" {
+		req.Header.Set("x-partner-code", PayOSPartnerCode)
+	}
 
 	client := &http.Client{}
 	res, err := client.Do(req)
@@ -107,8 +117,8 @@ func CreatePaymentLink(paymentData CheckoutRequestType) (*CheckoutResponseDataTy
 	}
 
 	if paymentLinkRes.Code == "00" {
-		paymentLinkResSignatute, _ := CreateSignatureFromObj(paymentLinkRes.Data, PayOSChecksumKey)
-		if paymentLinkResSignatute != *paymentLinkRes.Signature {
+		paymentLinkResSignature, _ := CreateSignatureFromObj(paymentLinkRes.Data, PayOSChecksumKey)
+		if paymentLinkResSignature != *paymentLinkRes.Signature {
 			return nil, NewPayOSError(DataNotIntegrityErrorCode, DataNotIntegrityErrorMessage)
 		}
 		if paymentLinkRes.Data != nil {
@@ -224,8 +234,8 @@ func CancelPaymentLink(orderCode string, cancellationReason *string) (*PaymentLi
 	}
 
 	if cancelPaymentLinkRes.Code == "00" {
-		paymentLinkResSignatute, _ := CreateSignatureFromObj(cancelPaymentLinkRes.Data, PayOSChecksumKey)
-		if paymentLinkResSignatute != *cancelPaymentLinkRes.Signature {
+		paymentLinkResSignature, _ := CreateSignatureFromObj(cancelPaymentLinkRes.Data, PayOSChecksumKey)
+		if paymentLinkResSignature != *cancelPaymentLinkRes.Signature {
 			return nil, NewPayOSError(DataNotIntegrityErrorCode, DataNotIntegrityErrorMessage)
 		}
 		if cancelPaymentLinkRes.Data != nil {
