@@ -22,4 +22,8 @@
 
 ## 1.0.5 - 2024-06-20
 
--Fix: json string in signature
+- Fix: json string in signature
+
+## 1.0.6 - 2024-07-03
+
+- Add: partnerCode in create payment link header
