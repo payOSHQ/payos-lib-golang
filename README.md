@@ -1,4 +1,4 @@
-# PayOs Go Package
+# PayOS Go Package
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/payOSHQ/payos-lib-golang.svg)](https://pkg.go.dev/github.com/payOSHQ/payos-lib-golang)
 
@@ -23,10 +23,9 @@ import (
 )
 
 func main(){
-    payos.Key(clientId, apiKey, checksumKey)
-    // or
-    payos.Key(clientId, apiKey, checksumKey, partnerCode)
-    
+    payos.Key(clientId, apiKey,checksumKey)
+    // or with your partner code
+    // payos.Key(clientId, apiKey,checksumKey, partnerCode)
     body := CheckoutRequestType{
 		OrderCode:   12345,
 		Amount:      2000,
@@ -84,7 +83,7 @@ func main(){
 }
 ```
 
-### Confirm Wehook
+### Confirm Webhook
 
 ```go
 package main
@@ -119,4 +118,34 @@ func main(){
     body := WebhookType{}
 	data, err := VerifyPaymentWebhookData(body)
 }
+```
+
+## Development
+
+1. Clone the repository
+2. Install dependencies
+
+```bash
+go mod tidy
+```
+
+3. Run tests
+
+```bash
+go test
+```
+
+4. Commit and create new tag
+
+```bash
+git commit -m "Your message"
+git tag v0.0.1
+git push origin v0.0.1
+```
+
+5. Publish to [pkg.go.dev](https://pkg.go.dev/)
+
+```bash
+GOPROXY=proxy.golang.org
+go list -m github.com/payOSHQ/payos-lib-golang@v0.1.0
 ```
