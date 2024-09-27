@@ -119,6 +119,7 @@ func TestVerifyPaymentWebhookData(t *testing.T) {
 	body := WebhookType{
 		Code:      "00",
 		Desc:      "success",
+		Success:   true,
 		Signature: signature,
 		Data:      &webhookData,
 	}

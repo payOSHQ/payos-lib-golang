@@ -81,6 +81,7 @@ type TransactionType struct {
 type WebhookType struct {
 	Code      string           `json:"code"`
 	Desc      string           `json:"desc"`
+	Success   bool             `json:"success"`
 	Data      *WebhookDataType `json:"data"`
 	Signature string           `json:"signature"`
 }
