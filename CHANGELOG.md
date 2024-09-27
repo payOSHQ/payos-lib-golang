@@ -27,3 +27,7 @@
 ## 1.0.6 - 2024-07-03
 
 - Add: partnerCode in create payment link header
+
+## 1.0.7 - 2024-09-27
+
+- Fix: Add `expiredAt` to `CheckoutResponseDataType`
