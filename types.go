@@ -40,6 +40,7 @@ type CheckoutResponseDataType struct {
 	Status        string `json:"status"`
 	CheckoutUrl   string `json:"checkoutUrl"`
 	QRCode        string `json:"qrCode"`
+	ExpiredAt     *int   `json:"expiredAt"`
 }
 
 type CancelPaymentLinkRequestType struct {
