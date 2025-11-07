@@ -9,8 +9,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/payOSHQ/payos-lib-golang/internal/apierror"
-	"github.com/payOSHQ/payos-lib-golang/internal/crypto"
+	"github.com/payOSHQ/payos-lib-golang/v2/internal/apierror"
+	"github.com/payOSHQ/payos-lib-golang/v2/internal/crypto"
 )
 
 // Deprecated: Use NewPayOS() constructor instead

@@ -7,7 +7,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/payOSHQ/payos-lib-golang"
+	"github.com/payOSHQ/payos-lib-golang/v2"
 )
 
 func main() {

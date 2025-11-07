@@ -1,6 +1,6 @@
 # payOS Go Library
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/payOSHQ/payos-lib-golang.svg)](https://pkg.go.dev/github.com/payOSHQ/payos-lib-golang)
+[![Go Reference](https://pkg.go.dev/badge/github.com/payOSHQ/payos-lib-golang/v2.svg)](https://pkg.go.dev/github.com/payOSHQ/payos-lib-golang/v2)
 [![Go Version](https://img.shields.io/github/go-mod/go-version/payOSHQ/payos-lib-golang)](https://golang.org/)
 
 The payOS Go library provides convenient access to the payOS Merchant API from applications written in Go.
@@ -14,7 +14,7 @@ Go 1.21 or higher.
 ## Installation
 
 ```bash
-go get github.com/payOSHQ/payos-lib-golang
+go get github.com/payOSHQ/payos-lib-golang/v2
 ```
 
 > [!IMPORTANT]
@@ -28,7 +28,7 @@ First you need initialize the client to interacting with payOS Merchant API.
 
 ```go
 import (
-    "github.com/payOSHQ/payos-lib-golang"
+    "github.com/payOSHQ/payos-lib-golang/v2"
 )
 
 client, err := payos.NewPayOS(&payos.PayOSOptions{
@@ -329,7 +329,7 @@ The signature can be manually created using crypto functions:
 
 ```go
 import (
-    "github.com/payOSHQ/payos-lib-golang/internal/crypto"
+    "github.com/payOSHQ/payos-lib-golang/v2/internal/crypto"
 )
 
 // For create-payment-link signature

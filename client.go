@@ -18,9 +18,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/payOSHQ/payos-lib-golang/internal"
-	"github.com/payOSHQ/payos-lib-golang/internal/apierror"
-	"github.com/payOSHQ/payos-lib-golang/internal/crypto"
+	"github.com/payOSHQ/payos-lib-golang/v2/internal"
+	"github.com/payOSHQ/payos-lib-golang/v2/internal/apierror"
+	"github.com/payOSHQ/payos-lib-golang/v2/internal/crypto"
 )
 
 const (
