@@ -120,7 +120,7 @@ The library now throws more specific error types for better error handling.
 
 ```go
 // before
-import "github.com/payOSHQ/payos-lib-golang/internal/apierror"
+import "github.com/payOSHQ/payos-lib-golang/v2/internal/apierror"
 
 _, err := payos.CreatePaymentLink(paymentData)
 if err != nil {
@@ -132,7 +132,7 @@ if err != nil {
 // after
 import (
     "errors"
-    "github.com/payOSHQ/payos-lib-golang/internal/apierror"
+    "github.com/payOSHQ/payos-lib-golang/v2/internal/apierror"
 )
 
 _, err := client.PaymentRequests.Create(context.Background(), paymentData)

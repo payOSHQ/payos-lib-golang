@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	payos "github.com/payOSHQ/payos-lib-golang"
+	payos "github.com/payOSHQ/payos-lib-golang/v2"
 )
 
 func main() {

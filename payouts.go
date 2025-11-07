@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/payOSHQ/payos-lib-golang/internal/apierror"
-	"github.com/payOSHQ/payos-lib-golang/internal/apijson"
-	"github.com/payOSHQ/payos-lib-golang/internal/crypto"
-	"github.com/payOSHQ/payos-lib-golang/internal/pagination"
+	"github.com/payOSHQ/payos-lib-golang/v2/internal/apierror"
+	"github.com/payOSHQ/payos-lib-golang/v2/internal/apijson"
+	"github.com/payOSHQ/payos-lib-golang/v2/internal/crypto"
+	"github.com/payOSHQ/payos-lib-golang/v2/internal/pagination"
 )
 
 // ========================
