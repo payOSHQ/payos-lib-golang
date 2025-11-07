@@ -22,13 +22,13 @@ jobs:
 
       - name: Bootstrap project
         run: |
-          bash scripts/bootstrap.sh 
+          bash ./scripts/bootstrap.sh 
 
       - name: Run lint
         run: |
-          bash scripts/lint.sh
+          bash ./scripts/lint.sh
 
       - name: Run test
         run: |
-          bash scripts/test.sh
+          bash ./scripts/test.sh
 
