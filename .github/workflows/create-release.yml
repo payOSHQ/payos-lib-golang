@@ -1,0 +1,139 @@
+name: Create Github Release
+
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+      - "v[0-9]+.[0-9]+.[0-9]+-*"
+  workflow_run:
+    workflows:
+      - CI
+    types:
+      - completed
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
+
+    permissions:
+      contents: write
+
+    outputs:
+      version: ${{ steps.version_info.outputs.version }}
+      is_prerelease: ${{ steps.version_info.outputs.is_prerelease }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.ref }}
+
+      - name: Extract version information
+        id: version_info
+        run: |
+          set -euo pipefail
+
+          # When triggered by workflow_run we need to derive the tag that points at the
+          # commit checked out above. Use `git tag --points-at` to find the tag name.
+          if [ "${{ github.event_name }}" = "workflow_run" ]; then
+            VERSION=$(git tag --points-at HEAD | head -n1 || true)
+            if [ -z "$VERSION" ]; then
+              echo "No tag found pointing at commit from the CI run; nothing to release." >&2
+              exit 0
+            fi
+          else
+            VERSION="${{ github.ref_name }}"
+          fi
+
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+          # Check if current version is pre-release (e.g. alpha / beta / rc)
+          if [[ "$VERSION" =~ -([a-zA-Z]+) ]]; then
+            echo "is_prerelease=true" >> $GITHUB_OUTPUT
+            echo "prerelease_tag=${BASH_REMATCH[1]}" >> $GITHUB_OUTPUT
+            echo "release_name=$VERSION" >> $GITHUB_OUTPUT
+          else
+            echo "is_prerelease=false" >> $GITHUB_OUTPUT
+            echo "prerelease_tag=" >> $GITHUB_OUTPUT
+            echo "release_name=$VERSION" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Extract changelog content
+        id: changelog
+        run: |
+          # https://medium.com/%40usman_qb/from-git-tag-to-github-release-automating-changelog-extraction-9cfcad1b13c4
+          VERSION="${{ steps.version_info.outputs.version }}"
+          # Remove 'v' prefix if it exists for matching changelog
+          VERSION_NUMBER="${VERSION#v}"
+
+          # Extract content between the version header and the next version header
+          awk -v version="$VERSION_NUMBER" '
+            BEGIN { found=0; print_content=0 }
+            /^## / {
+              if (found && print_content) {
+                exit
+              }
+              if ($0 ~ version) {
+                found=1
+                print_content=1
+                next
+              }
+            }
+            found && print_content && !/^## / {
+              print $0
+            }
+          ' CHANGELOG.md > release_notes.md
+
+          # Check if we found any content
+          if [ ! -s release_notes.md ]; then
+            echo "See [CHANGELOG.md](./CHANGELOG.md) for details." >> release_notes.md
+          fi
+
+      - name: Create Github Release
+        id: create_release
+        run: |
+          if [ "${{ steps.version_info.outputs.is_prerelease }}" = "true" ]; then
+            echo "Create release for version ${{ steps.version_info.outputs.version }} (Pre-release)"
+            gh release create "${{ steps.version_info.outputs.version }}" \
+              --title "${{ steps.version_info.outputs.release_name }}" \
+              --notes-file release_notes.md \
+              --prerelease
+          else
+            echo "Create release for version ${{ steps.version_info.outputs.version }}"
+            gh release create "${{ steps.version_info.outputs.version }}" \
+              --title "${{ steps.version_info.outputs.release_name }}" \
+              --notes-file release_notes.md
+          fi
+          echo "Create release successfully"
+        env:
+          GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
+  # Trigger Go module proxy / pkg.go.dev indexing by fetching the released module version.
+  # pkg.go.dev and the Go proxy index modules by fetching tags from VCS; requesting
+  # the module version from a runner ensures the proxy pulls the new tag promptly.
+  publish-pkg:
+    runs-on: ubuntu-latest
+    needs: create-release
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: ./go.mod
+
+      - name: Trigger Go proxy / pkg.go.dev fetch (script)
+        id: trigger_pkg
+        run: |
+          bash scripts/trigger-pkg.sh "${{ needs.create-release.outputs.version }}"
+
+      - name: Report URL
+        run: |
+          MODULE=$(awk '/^module /{print $2; exit}' go.mod || true)
+          if [ -n "$MODULE" ]; then
+            echo "pkg.go.dev URL: https://pkg.go.dev/${MODULE}"
+          fi
