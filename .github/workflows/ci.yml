@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - develop
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+      - "v[0-9]+.[0-9]+.[0-9]+-*"
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: ./go.mod
+
+      - name: Bootstrap project
+        run: |
+          bash ./scripts/bootstrap.sh 
+
+      - name: Run lint
+        run: |
+          bash ./scripts/lint.sh
+
+      - name: Run test
+        run: |
+          bash ./scripts/test.sh
+
