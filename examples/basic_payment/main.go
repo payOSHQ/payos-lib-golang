@@ -6,7 +6,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/payOSHQ/payos-lib-golang"
+	"github.com/payOSHQ/payos-lib-golang/v2"
 )
 
 func main() {
