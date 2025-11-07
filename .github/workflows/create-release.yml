@@ -1,20 +1,19 @@
 name: Create Github Release
 
 on:
-  push:
-    tags:
-      - "v[0-9]+.[0-9]+.[0-9]+"
-      - "v[0-9]+.[0-9]+.[0-9]+-*"
   workflow_run:
     workflows:
       - CI
     types:
       - completed
+    branches:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+      - 'v[0-9]+.[0-9]+.[0-9]+-*'
 
 jobs:
   create-release:
     runs-on: ubuntu-latest
-    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' && startsWith(github.event.workflow_run.head_branch, 'v') }}
 
     permissions:
       contents: write
@@ -28,23 +27,18 @@ jobs:
         uses: actions/checkout@v5
         with:
           fetch-depth: 0
-          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.ref }}
+          ref: ${{ github.event.workflow_run.head_sha }}
 
       - name: Extract version information
         id: version_info
         run: |
           set -euo pipefail
 
-          # When triggered by workflow_run we need to derive the tag that points at the
-          # commit checked out above. Use `git tag --points-at` to find the tag name.
-          if [ "${{ github.event_name }}" = "workflow_run" ]; then
-            VERSION=$(git tag --points-at HEAD | head -n1 || true)
-            if [ -z "$VERSION" ]; then
-              echo "No tag found pointing at commit from the CI run; nothing to release." >&2
-              exit 0
-            fi
-          else
-            VERSION="${{ github.ref_name }}"
+          # Find the tag that points at the commit from the CI run
+          VERSION=$(git tag --points-at HEAD | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+' | head -n1 || true)
+          if [ -z "$VERSION" ]; then
+            echo "No version tag found pointing at commit; skipping release." >&2
+            exit 0
           fi
 
           echo "version=$VERSION" >> $GITHUB_OUTPUT
