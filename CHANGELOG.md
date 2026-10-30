@@ -4,7 +4,7 @@
 
 ### Bug Fixes
 
-- **webhooks:** stricter validation of webhook data before signature verification; no panic on a non-string signature
+- **webhooks:** stricter validation of webhook data before signature verification; no panic on a non-string signature ([GHSA-ghjh-8q98-fg8g](https://github.com/payOSHQ/payos-lib-golang/security/advisories/GHSA-ghjh-8q98-fg8g))
 - **crypto:** constant-time signature comparison; GenerateUUID uses crypto/rand
 
 ## 2.0.0 (2025-11-07)
