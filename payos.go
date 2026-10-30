@@ -154,7 +154,7 @@ func CreatePaymentLink(paymentData CheckoutRequestType) (*CheckoutResponseDataTy
 		req.Header.Set("x-partner-code", PayOSPartnerCode)
 	}
 
-	client := &http.Client{}
+	client := withSafeRedirects(nil)
 	res, err := client.Do(req)
 	if err != nil {
 		return nil, apierror.NewPayOSError(err.Error())
@@ -207,8 +207,12 @@ func GetPaymentLinkInformation(orderCode string) (*PaymentLinkDataType, error) {
 	if len(orderCode) == 0 {
 		return nil, apierror.NewPayOSError("invalid params")
 	}
+	escapedOrderCode, err := encodePathSegment("orderCode", orderCode)
+	if err != nil {
+		return nil, err
+	}
 
-	url := fmt.Sprintf("%s/v2/payment-requests/%s", PayOSBaseUrl, orderCode)
+	url := fmt.Sprintf("%s/v2/payment-requests/%s", PayOSBaseUrl, escapedOrderCode)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, apierror.NewPayOSError(err.Error())
@@ -218,7 +222,7 @@ func GetPaymentLinkInformation(orderCode string) (*PaymentLinkDataType, error) {
 	req.Header.Set("x-api-key", PayOSApiKey)
 	req.Header.Set("Content-Type", "application/json")
 
-	client := &http.Client{}
+	client := withSafeRedirects(nil)
 	res, err := client.Do(req)
 	if err != nil {
 		return nil, apierror.NewPayOSError(err.Error())
@@ -272,6 +276,10 @@ func CancelPaymentLink(orderCode string, cancellationReason *string) (*PaymentLi
 	if len(orderCode) == 0 {
 		return nil, apierror.NewPayOSError("invalid params")
 	}
+	escapedOrderCode, err := encodePathSegment("orderCode", orderCode)
+	if err != nil {
+		return nil, err
+	}
 
 	data := CancelPaymentLinkRequestType{
 		CancellationReason: cancellationReason,
@@ -281,7 +289,7 @@ func CancelPaymentLink(orderCode string, cancellationReason *string) (*PaymentLi
 		return nil, apierror.NewPayOSError(err.Error())
 	}
 
-	url := fmt.Sprintf("%s/v2/payment-requests/%s/cancel", PayOSBaseUrl, orderCode)
+	url := fmt.Sprintf("%s/v2/payment-requests/%s/cancel", PayOSBaseUrl, escapedOrderCode)
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(cancelRequest))
 	if err != nil {
 		return nil, apierror.NewPayOSError(err.Error())
@@ -291,7 +299,7 @@ func CancelPaymentLink(orderCode string, cancellationReason *string) (*PaymentLi
 	req.Header.Set("x-api-key", PayOSApiKey)
 	req.Header.Set("Content-Type", "application/json")
 
-	client := &http.Client{}
+	client := withSafeRedirects(nil)
 	res, err := client.Do(req)
 	if err != nil {
 		return nil, apierror.NewPayOSError(err.Error())
@@ -363,7 +371,7 @@ func ConfirmWebhook(webhookUrl string) (string, error) {
 	req.Header.Set("x-api-key", PayOSApiKey)
 	req.Header.Set("Content-Type", "application/json")
 
-	client := &http.Client{}
+	client := withSafeRedirects(nil)
 	res, err := client.Do(req)
 	if err != nil {
 		return "", apierror.NewPayOSError(err.Error())

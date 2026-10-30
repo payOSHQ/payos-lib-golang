@@ -163,11 +163,12 @@ func (p *Payouts) Create(ctx context.Context, payoutData PayoutRequest, idempote
 
 // Get retrieves detailed information about a specific payout
 func (p *Payouts) Get(ctx context.Context, payoutId string) (*Payout, error) {
-	if payoutId == "" {
-		return nil, apierror.NewPayOSError("invalid params")
+	payoutStr, err := encodePathSegment("payoutId", payoutId)
+	if err != nil {
+		return nil, err
 	}
 
-	path := fmt.Sprintf("/v1/payouts/%s", payoutId)
+	path := fmt.Sprintf("/v1/payouts/%s", payoutStr)
 	result, err := p.client.Get(ctx, path, nil, nil, &SignatureOpts{Response: "header"})
 	if err != nil {
 		return nil, err

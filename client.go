@@ -72,6 +72,8 @@ func NewClient(opts *PayOSOptions) (*Client, error) {
 			Timeout: opts.Timeout,
 		}
 	}
+	// Never forward x-api-key / x-client-id to another origin on redirects.
+	httpClient = withSafeRedirects(httpClient)
 
 	// Prepare middlewares with debug logger if enabled
 	middlewares := opts.Middlewares
@@ -463,6 +465,9 @@ func (c *Client) executeRequest(ctx context.Context, opts *RequestOptions, attem
 				return nil, apierror.NewInvalidSignatureError("response signature not found in body")
 			}
 			receivedSignature = *apiResp.Signature
+			if err := validateResponseData(apiResp.Data); err != nil {
+				return nil, err
+			}
 			expectedSignature, err = crypto.CreateSignatureFromObj(apiResp.Data, c.checksumKey)
 			if err != nil {
 				return nil, apierror.NewInvalidSignatureError("failed to create response signature")
