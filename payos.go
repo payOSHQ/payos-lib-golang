@@ -2,6 +2,7 @@ package payos
 
 import (
 	"bytes"
+	"crypto/hmac"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -399,12 +400,16 @@ func VerifyPaymentWebhookData(webhookBody WebhookType) (*WebhookDataType, error)
 		return nil, apierror.NewPayOSError("signature invalid")
 	}
 
+	if err := validateTypedWebhookData(webhookBody.Data); err != nil {
+		return nil, err
+	}
+
 	signData, err := crypto.CreateSignatureFromObj(webhookBody.Data, PayOSChecksumKey)
 	if err != nil {
 		return nil, apierror.NewPayOSError("internal server error")
 	}
 
-	if signData != webhookBody.Signature {
+	if !hmac.Equal([]byte(signData), []byte(webhookBody.Signature)) {
 		return nil, apierror.NewPayOSError("data not integrity")
 	}
 

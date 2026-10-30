@@ -3,6 +3,7 @@ package crypto
 import (
 	"crypto/hmac"
 	"crypto/md5"
+	"crypto/rand"
 	"crypto/sha1"
 	"crypto/sha256"
 	"crypto/sha512"
@@ -15,7 +16,6 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"time"
 )
 
 // CreateSignatureFromObj creates a signature from an object by sorting keys
@@ -229,10 +229,8 @@ func convertToString(value interface{}) (string, error) {
 func GenerateUUID() string {
 	// Simple UUID v4 generation
 	b := make([]byte, 16)
-	// This is a simplified version - in production, use crypto/rand
-	timestamp := time.Now().UnixNano()
-	for i := 0; i < 16; i++ {
-		b[i] = byte((timestamp >> (i * 8)) & 0xff)
+	if _, err := rand.Read(b); err != nil {
+		panic("payos: crypto/rand unavailable: " + err.Error())
 	}
 	b[6] = (b[6] & 0x0f) | 0x40 // Version 4
 	b[8] = (b[8] & 0x3f) | 0x80 // Variant bits

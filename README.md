@@ -96,11 +96,13 @@ webhookBody := map[string]interface{}{
     "signature": "8d8640d802576397a1ce45ebda7f835055768ac7ad2e0bfb77f9b8f12cca4c7f",
 }
 
-webhookData, err := client.Webhooks.VerifyData(webhookBody, client.ChecksumKey)
+webhookData, err := client.Webhooks.VerifyData(ctx, webhookBody)
 if err != nil {
     log.Fatal(err)
 }
 ```
+
+Malformed webhook data (unexpected keys, value types, or values containing `=`) returns an `invalid webhook data` error.
 
 For more information about webhooks, see [the API doc](https://payos.vn/docs/api/#tag/payment-webhook/operation/payment-webhook).
 

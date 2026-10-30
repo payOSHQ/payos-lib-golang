@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.0.2 (2026-10-30)
+
+### Bug Fixes
+
+- **webhooks:** stricter validation of webhook data before signature verification; no panic on a non-string signature
+- **crypto:** constant-time signature comparison; GenerateUUID uses crypto/rand
+
 ## 2.0.0 (2025-11-07)
 
 This release introduces a major refactor with structured client initialization, context support, resource-based methods, and new payout features. For full migration guide see [MIGRATION.md](./MIGRATION.md).

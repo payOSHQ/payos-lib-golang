@@ -3,6 +3,7 @@ package payos
 import (
 	"bytes"
 	"context"
+	"crypto/hmac"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -479,7 +480,7 @@ func (c *Client) executeRequest(ctx context.Context, opts *RequestOptions, attem
 			return nil, apierror.NewInvalidSignatureError("invalid signature response type")
 		}
 
-		if receivedSignature != expectedSignature {
+		if !hmac.Equal([]byte(receivedSignature), []byte(expectedSignature)) {
 			return nil, apierror.NewInvalidSignatureError("data integrity check failed")
 		}
 	}
