@@ -169,6 +169,9 @@ func CreatePaymentLink(paymentData CheckoutRequestType) (*CheckoutResponseDataTy
 	}
 
 	if paymentLinkRes.Code == "00" {
+		if err := validateResponseData(paymentLinkRes.Data); err != nil {
+			return nil, err
+		}
 		paymentLinkResSignature, _ := crypto.CreateSignatureFromObj(paymentLinkRes.Data, PayOSChecksumKey)
 		if paymentLinkResSignature != *paymentLinkRes.Signature {
 			return nil, apierror.NewPayOSError("data not integrity")
@@ -237,6 +240,9 @@ func GetPaymentLinkInformation(orderCode string) (*PaymentLinkDataType, error) {
 	}
 
 	if paymentLinkInfoRes.Code == "00" {
+		if err := validateResponseData(paymentLinkInfoRes.Data); err != nil {
+			return nil, err
+		}
 		paymentLinkInfoResSignature, _ := crypto.CreateSignatureFromObj(paymentLinkInfoRes.Data, PayOSChecksumKey)
 		if paymentLinkInfoResSignature != *paymentLinkInfoRes.Signature {
 			return nil, apierror.NewPayOSError("data not integrity")
@@ -314,6 +320,9 @@ func CancelPaymentLink(orderCode string, cancellationReason *string) (*PaymentLi
 	}
 
 	if cancelPaymentLinkRes.Code == "00" {
+		if err := validateResponseData(cancelPaymentLinkRes.Data); err != nil {
+			return nil, err
+		}
 		paymentLinkResSignature, _ := crypto.CreateSignatureFromObj(cancelPaymentLinkRes.Data, PayOSChecksumKey)
 		if paymentLinkResSignature != *cancelPaymentLinkRes.Signature {
 			return nil, apierror.NewPayOSError("data not integrity")

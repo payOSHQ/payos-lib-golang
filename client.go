@@ -72,7 +72,7 @@ func NewClient(opts *PayOSOptions) (*Client, error) {
 			Timeout: opts.Timeout,
 		}
 	}
-	// Never forward x-api-key / x-client-id to another origin on redirects.
+	// Never forward credentials to another origin on redirects (also wraps a caller-supplied client).
 	httpClient = withSafeRedirects(httpClient)
 
 	// Prepare middlewares with debug logger if enabled

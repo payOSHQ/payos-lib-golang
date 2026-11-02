@@ -43,16 +43,9 @@ func (inv *Invoices) Get(ctx context.Context, id interface{}) (*InvoicesInfo, er
 
 // Download downloads an invoice in PDF format by invoice ID and payment link ID or order code
 func (inv *Invoices) Download(ctx context.Context, invoiceId string, id interface{}) (*FileDownloadResponse, error) {
-	var idStr string
-	switch v := id.(type) {
-	case string:
-		idStr = v
-	case int:
-		idStr = fmt.Sprintf("%d", v)
-	case int64:
-		idStr = fmt.Sprintf("%d", v)
-	default:
-		return nil, apierror.NewPayOSError("id must be string or number")
+	idStr, err := encodePathSegment("id", id)
+	if err != nil {
+		return nil, err
 	}
 
 	invoiceStr, err := encodePathSegment("invoiceId", invoiceId)

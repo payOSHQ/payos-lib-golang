@@ -2,8 +2,8 @@ package payos
 
 import (
 	"fmt"
-	"net/url"
 	"strconv"
+	"strings"
 
 	"github.com/payOSHQ/payos-lib-golang/v2/internal/apierror"
 )
@@ -30,7 +30,7 @@ func encodePathSegment(name string, value interface{}) (string, error) {
 		if v == "." || v == ".." {
 			return "", apierror.NewPayOSError(fmt.Sprintf("%s must not be a dot segment", name))
 		}
-		return url.PathEscape(v), nil
+		return encodeURIComponent(v), nil
 	default:
 		return "", apierror.NewPayOSError(fmt.Sprintf("%s must be string or number", name))
 	}
@@ -41,4 +41,24 @@ func encodeIntSegment(name string, v int64) (string, error) {
 		return "", apierror.NewPayOSError(fmt.Sprintf("%s must be a non-negative safe integer", name))
 	}
 	return strconv.FormatInt(v, 10), nil
+}
+
+// encodeURIComponent percent-encodes every byte except the characters JavaScript's
+// encodeURIComponent leaves untouched (A-Z a-z 0-9 - _ . ! ~ * ' ( )), so that '/', '?', '#',
+// '%' and every other delimiter end up inside the segment.
+func encodeURIComponent(s string) string {
+	const hex = "0123456789ABCDEF"
+	var b strings.Builder
+	b.Grow(len(s))
+	for i := 0; i < len(s); i++ {
+		c := s[i]
+		if c >= 'A' && c <= 'Z' || c >= 'a' && c <= 'z' || c >= '0' && c <= '9' || strings.IndexByte("-_.!~*'()", c) >= 0 {
+			b.WriteByte(c)
+			continue
+		}
+		b.WriteByte('%')
+		b.WriteByte(hex[c>>4])
+		b.WriteByte(hex[c&0x0f])
+	}
+	return b.String()
 }
