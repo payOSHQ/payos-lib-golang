@@ -292,7 +292,7 @@ func (c *Client) Request(ctx context.Context, opts *RequestOptions) (any, error)
 		lastErr = err
 
 		// Check if we should retry
-		if attempt >= c.maxRetries {
+		if attempt >= c.maxRetries || errors.Is(err, errTooManyRedirects) {
 			break
 		}
 
@@ -562,7 +562,7 @@ func (c *Client) DownloadFile(ctx context.Context, path string) (*FileDownloadRe
 		resp, err := c.httpClient.Do(req)
 		if err != nil {
 			lastErr = apierror.NewConnectionError("request failed", err)
-			if attempt < c.maxRetries {
+			if attempt < c.maxRetries && !errors.Is(err, errTooManyRedirects) {
 				time.Sleep(c.calculateBackoff(attempt, nil))
 				continue
 			}

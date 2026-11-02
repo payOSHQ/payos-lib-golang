@@ -14,8 +14,8 @@ const maxSafeInteger = 1<<53 - 1
 // encodePathSegment returns value as a single, percent-encoded URL path segment.
 //
 // Identifiers are interpolated into paths such as /v2/payment-requests/{id}/cancel. Without
-// encoding, a value like "../../v1/payouts-account/balance" or "x?" re-targets the authenticated
-// request to another endpoint (path traversal / query injection), so strings are percent-encoded
+// encoding, a value like "../../v1/payouts-account/balance" or "x?" would send the request to a
+// different endpoint or add a query string, so strings are percent-encoded
 // and "." / ".." segments are rejected. Integers must be non-negative and within the safe range.
 func encodePathSegment(name string, value interface{}) (string, error) {
 	switch v := value.(type) {

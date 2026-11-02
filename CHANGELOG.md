@@ -6,7 +6,7 @@
 
 - **webhooks:** stricter validation of webhook data before signature verification; no panic on a non-string signature ([GHSA-ghjh-8q98-fg8g](https://github.com/payOSHQ/payos-lib-golang/security/advisories/GHSA-ghjh-8q98-fg8g))
 - **crypto:** constant-time signature comparison; GenerateUUID uses crypto/rand
-- **client:** percent-encode path segments (ids, order codes, invoice ids, payout ids) and reject empty, `.`/`..`, negative or unsafe integer values; strip credentials (`x-api-key`, `x-client-id`, `x-partner-code`, `Authorization`, `Cookie`, `Proxy-Authorization`) when a redirect leaves the API origin (max 5 redirects, also for a custom `HTTPClient`); validate body-signed response data before signature verification
+- **client:** percent-encode path segments (ids, order codes, invoice ids, payout ids) and reject empty, `.`/`..`, negative or unsafe integer values; strip credentials (`x-api-key`, `x-client-id`, `x-partner-code`, `Authorization`, `Cookie`, `Proxy-Authorization`) for the rest of a redirect chain once it leaves the API origin, including cookie-jar cookies (max 5 redirects, not retried; also for a custom `HTTPClient`); validate body-signed response data before signature verification
 
 ## 2.0.0 (2025-11-07)
 

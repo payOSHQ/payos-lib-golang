@@ -5,11 +5,14 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"net/http/cookiejar"
 	"net/http/httptest"
 	"net/url"
 	"strings"
 	"sync"
 	"testing"
+
+	"github.com/payOSHQ/payos-lib-golang/v2/internal/apierror"
 )
 
 var credentialHeaders = []string{
@@ -273,28 +276,74 @@ func TestFiveRedirectsAreFollowed(t *testing.T) {
 	}
 }
 
-func TestMoreThanFiveRedirectsFail(t *testing.T) {
-	lab := newRedirectLab(t)
-	chainRedirects(lab, 6)
-	c, err := NewClient(&PayOSOptions{
-		ClientId:    "client-id",
-		ApiKey:      "api-key",
-		ChecksumKey: "checksum-key",
-		BaseURL:     lab.aURL,
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	c.maxRetries = 0
-	_, err = c.Get(context.Background(), "/r0", nil, nil, nil)
+func assertTooManyRedirects(t *testing.T, lab *redirectLab, err error) {
+	t.Helper()
 	if err == nil {
 		t.Fatal("expected an error for more than 5 redirects")
+	}
+	var connErr *apierror.ConnectionError
+	if !errors.As(err, &connErr) {
+		t.Fatalf("error type = %T, want *apierror.ConnectionError", err)
 	}
 	if !strings.Contains(err.Error(), "too many redirects (more than 5)") {
 		t.Fatalf("error = %v, want too many redirects (more than 5)", err)
 	}
 	if hops := lab.recorded(); len(hops) != 6 {
-		t.Fatalf("got %d requests, want 6", len(hops))
+		t.Fatalf("got %d requests, want 6 (no retry)", len(hops))
+	}
+}
+
+func TestMoreThanFiveRedirectsFailWithoutRetry(t *testing.T) {
+	lab := newRedirectLab(t)
+	chainRedirects(lab, 6)
+	c := lab.client(t, nil)
+	if c.maxRetries == 0 {
+		t.Fatal("expected default retries to be enabled")
+	}
+	_, err := c.Get(context.Background(), "/r0", nil, nil, nil)
+	assertTooManyRedirects(t, lab, err)
+}
+
+func TestDownloadFileMoreThanFiveRedirectsFailWithoutRetry(t *testing.T) {
+	lab := newRedirectLab(t)
+	chainRedirects(lab, 6)
+	c := lab.client(t, nil)
+	_, err := c.DownloadFile(context.Background(), "/r0")
+	assertTooManyRedirects(t, lab, err)
+}
+
+func TestCookieJarCookiesAreNotSentAfterLeavingOrigin(t *testing.T) {
+	lab := newRedirectLab(t)
+	// b.URL shares the host 127.0.0.1 with a, so the jar would return a's cookie for b as well.
+	lab.route("a", "/start", http.StatusFound, "/same")
+	lab.route("a", "/same", http.StatusFound, lab.b.URL+"/middle")
+	lab.route("b", "/middle", http.StatusFound, lab.aURL+"/end")
+	jar, err := cookiejar.New(nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	aURL, err := url.Parse(lab.aURL)
+	if err != nil {
+		t.Fatal(err)
+	}
+	jar.SetCookies(aURL, []*http.Cookie{{Name: "session", Value: "jar", Path: "/"}})
+	custom := &http.Client{Jar: jar}
+	c := lab.client(t, custom)
+	if _, err := c.Get(context.Background(), "/start", nil, nil, nil); err != nil {
+		t.Fatalf("Get: %v", err)
+	}
+	hops := lab.recorded()
+	expectHops(t, hops, "a/start", "a/same", "b/middle", "a/end")
+	for i, want := range []bool{true, true, false, false} {
+		got := strings.Contains(hops[i].header.Get("Cookie"), "session=jar")
+		if got != want {
+			t.Errorf("hop %s%s: jar cookie sent = %v, want %v", hops[i].server, hops[i].path, got, want)
+		}
+	}
+	assertHeadersAbsent(t, hops[2])
+	assertHeadersAbsent(t, hops[3])
+	if custom.Transport != nil {
+		t.Fatal("caller's http.Client was modified")
 	}
 }
 

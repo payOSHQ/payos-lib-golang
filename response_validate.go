@@ -9,8 +9,8 @@ import (
 	"github.com/payOSHQ/payos-lib-golang/v2/internal/apierror"
 )
 
-// A `&key=` sequence inside a value is what lets the unencoded signed string be re-split.
-var responseSmugglingPattern = regexp.MustCompile(`&[A-Za-z0-9_]+=`)
+// A `&key=` sequence inside a value would let the unencoded signed string be split into other fields.
+var keyDelimiterPattern = regexp.MustCompile(`&[A-Za-z0-9_]+=`)
 
 func invalidResponseData(format string, a ...interface{}) error {
 	return apierror.NewInvalidSignatureError("Invalid response data: " + fmt.Sprintf(format, a...))
@@ -32,7 +32,7 @@ func validateResponseScalar(path string, value interface{}) error {
 	switch v := value.(type) {
 	case nil, bool:
 	case string:
-		if responseSmugglingPattern.MatchString(v) {
+		if keyDelimiterPattern.MatchString(v) {
 			return invalidResponseData("%q must not contain a \"&key=\" sequence", path)
 		}
 	case float64:
