@@ -2,6 +2,7 @@ package payos
 
 import (
 	"context"
+	"crypto/hmac"
 
 	"github.com/payOSHQ/payos-lib-golang/v2/internal/apierror"
 	"github.com/payOSHQ/payos-lib-golang/v2/internal/crypto"
@@ -116,16 +117,22 @@ func verifyWebhookSignature(webhookBody interface{}, checksumKey string) (interf
 	if !hasData || data == nil {
 		return nil, apierror.NewPayOSError("data invalid")
 	}
-	if !hasSig || signature == "" {
+	sigStr, ok := signature.(string)
+	if !hasSig || !ok || sigStr == "" {
 		return nil, apierror.NewPayOSError("signature invalid")
 	}
 
-	signData, err := crypto.CreateSignatureFromObj(data, checksumKey)
+	dataMap, err := validateWebhookData(data)
+	if err != nil {
+		return nil, err
+	}
+
+	signData, err := crypto.CreateSignatureFromObj(dataMap, checksumKey)
 	if err != nil {
 		return nil, apierror.NewPayOSError("internal server error")
 	}
 
-	if signData != signature.(string) {
+	if !hmac.Equal([]byte(signData), []byte(sigStr)) {
 		return nil, apierror.NewPayOSError("data not integrity")
 	}
 

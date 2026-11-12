@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.0.2 (2026-10-30)
+
+### Bug Fixes
+
+- **webhooks:** stricter validation of webhook data before signature verification; no panic on a non-string signature ([GHSA-ghjh-8q98-fg8g](https://github.com/payOSHQ/payos-lib-golang/security/advisories/GHSA-ghjh-8q98-fg8g))
+- **crypto:** constant-time signature comparison; GenerateUUID uses crypto/rand
+- **client:** percent-encode path segments (ids, order codes, invoice ids, payout ids) and reject empty, `.`/`..`, negative or unsafe integer values; strip credentials (`x-api-key`, `x-client-id`, `x-partner-code`, `Authorization`, `Cookie`, `Proxy-Authorization`) for the rest of a redirect chain once it leaves the API origin, including cookie-jar cookies (max 5 redirects, not retried; also for a custom `HTTPClient`); validate body-signed response data before signature verification ([GHSA-5g54-84rc-7p87](https://github.com/payOSHQ/payos-lib-golang/security/advisories/GHSA-5g54-84rc-7p87), [GHSA-cxm6-8qxx-6wh7](https://github.com/payOSHQ/payos-lib-golang/security/advisories/GHSA-cxm6-8qxx-6wh7), [GHSA-fh29-c9mv-w9jx](https://github.com/payOSHQ/payos-lib-golang/security/advisories/GHSA-fh29-c9mv-w9jx))
+
 ## 2.0.0 (2025-11-07)
 
 This release introduces a major refactor with structured client initialization, context support, resource-based methods, and new payout features. For full migration guide see [MIGRATION.md](./MIGRATION.md).

@@ -216,20 +216,9 @@ func (pr *PaymentRequests) Create(ctx context.Context, data CreatePaymentLinkReq
 
 // Get retrieves payment link information by payment link ID or order code
 func (pr *PaymentRequests) Get(ctx context.Context, id interface{}) (*PaymentLink, error) {
-	var idStr string
-	switch v := id.(type) {
-	case string:
-		idStr = v
-	case int:
-		idStr = fmt.Sprintf("%d", v)
-	case int64:
-		idStr = fmt.Sprintf("%d", v)
-	default:
-		return nil, apierror.NewPayOSError("id must be string or number")
-	}
-
-	if idStr == "" {
-		return nil, apierror.NewPayOSError("invalid params")
+	idStr, err := encodePathSegment("id", id)
+	if err != nil {
+		return nil, err
 	}
 
 	path := fmt.Sprintf("/v2/payment-requests/%s", idStr)
@@ -248,20 +237,9 @@ func (pr *PaymentRequests) Get(ctx context.Context, id interface{}) (*PaymentLin
 
 // Cancel cancels a payment link by payment link ID or order code
 func (pr *PaymentRequests) Cancel(ctx context.Context, id interface{}, cancellationReason *string) (*PaymentLink, error) {
-	var idStr string
-	switch v := id.(type) {
-	case string:
-		idStr = v
-	case int:
-		idStr = fmt.Sprintf("%d", v)
-	case int64:
-		idStr = fmt.Sprintf("%d", v)
-	default:
-		return nil, apierror.NewPayOSError("id must be string or number")
-	}
-
-	if idStr == "" {
-		return nil, apierror.NewPayOSError("invalid params")
+	idStr, err := encodePathSegment("id", id)
+	if err != nil {
+		return nil, err
 	}
 
 	path := fmt.Sprintf("/v2/payment-requests/%s/cancel", idStr)

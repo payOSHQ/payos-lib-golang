@@ -1,0 +1,64 @@
+package payos
+
+import (
+	"fmt"
+	"strconv"
+	"strings"
+
+	"github.com/payOSHQ/payos-lib-golang/v2/internal/apierror"
+)
+
+// maxSafeInteger is the largest integer a JSON number (IEEE-754 double) represents exactly.
+const maxSafeInteger = 1<<53 - 1
+
+// encodePathSegment returns value as a single, percent-encoded URL path segment.
+//
+// Identifiers are interpolated into paths such as /v2/payment-requests/{id}/cancel. Without
+// encoding, a value like "../../v1/payouts-account/balance" or "x?" would send the request to a
+// different endpoint or add a query string, so strings are percent-encoded
+// and "." / ".." segments are rejected. Integers must be non-negative and within the safe range.
+func encodePathSegment(name string, value interface{}) (string, error) {
+	switch v := value.(type) {
+	case int:
+		return encodeIntSegment(name, int64(v))
+	case int64:
+		return encodeIntSegment(name, v)
+	case string:
+		if v == "" {
+			return "", apierror.NewPayOSError("invalid params")
+		}
+		if v == "." || v == ".." {
+			return "", apierror.NewPayOSError(fmt.Sprintf("%s must not be a dot segment", name))
+		}
+		return encodeURIComponent(v), nil
+	default:
+		return "", apierror.NewPayOSError(fmt.Sprintf("%s must be string or number", name))
+	}
+}
+
+func encodeIntSegment(name string, v int64) (string, error) {
+	if v < 0 || v > maxSafeInteger {
+		return "", apierror.NewPayOSError(fmt.Sprintf("%s must be a non-negative safe integer", name))
+	}
+	return strconv.FormatInt(v, 10), nil
+}
+
+// encodeURIComponent percent-encodes every byte except the characters JavaScript's
+// encodeURIComponent leaves untouched (A-Z a-z 0-9 - _ . ! ~ * ' ( )), so that '/', '?', '#',
+// '%' and every other delimiter end up inside the segment.
+func encodeURIComponent(s string) string {
+	const hex = "0123456789ABCDEF"
+	var b strings.Builder
+	b.Grow(len(s))
+	for i := 0; i < len(s); i++ {
+		c := s[i]
+		if c >= 'A' && c <= 'Z' || c >= 'a' && c <= 'z' || c >= '0' && c <= '9' || strings.IndexByte("-_.!~*'()", c) >= 0 {
+			b.WriteByte(c)
+			continue
+		}
+		b.WriteByte('%')
+		b.WriteByte(hex[c>>4])
+		b.WriteByte(hex[c&0x0f])
+	}
+	return b.String()
+}

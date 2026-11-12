@@ -3,6 +3,7 @@ package payos
 import (
 	"bytes"
 	"context"
+	"crypto/hmac"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -71,6 +72,8 @@ func NewClient(opts *PayOSOptions) (*Client, error) {
 			Timeout: opts.Timeout,
 		}
 	}
+	// Never forward credentials to another origin on redirects (also wraps a caller-supplied client).
+	httpClient = withSafeRedirects(httpClient)
 
 	// Prepare middlewares with debug logger if enabled
 	middlewares := opts.Middlewares
@@ -289,7 +292,7 @@ func (c *Client) Request(ctx context.Context, opts *RequestOptions) (any, error)
 		lastErr = err
 
 		// Check if we should retry
-		if attempt >= c.maxRetries {
+		if attempt >= c.maxRetries || errors.Is(err, errTooManyRedirects) {
 			break
 		}
 
@@ -462,6 +465,9 @@ func (c *Client) executeRequest(ctx context.Context, opts *RequestOptions, attem
 				return nil, apierror.NewInvalidSignatureError("response signature not found in body")
 			}
 			receivedSignature = *apiResp.Signature
+			if err := validateResponseData(apiResp.Data); err != nil {
+				return nil, err
+			}
 			expectedSignature, err = crypto.CreateSignatureFromObj(apiResp.Data, c.checksumKey)
 			if err != nil {
 				return nil, apierror.NewInvalidSignatureError("failed to create response signature")
@@ -479,7 +485,7 @@ func (c *Client) executeRequest(ctx context.Context, opts *RequestOptions, attem
 			return nil, apierror.NewInvalidSignatureError("invalid signature response type")
 		}
 
-		if receivedSignature != expectedSignature {
+		if !hmac.Equal([]byte(receivedSignature), []byte(expectedSignature)) {
 			return nil, apierror.NewInvalidSignatureError("data integrity check failed")
 		}
 	}
@@ -556,7 +562,7 @@ func (c *Client) DownloadFile(ctx context.Context, path string) (*FileDownloadRe
 		resp, err := c.httpClient.Do(req)
 		if err != nil {
 			lastErr = apierror.NewConnectionError("request failed", err)
-			if attempt < c.maxRetries {
+			if attempt < c.maxRetries && !errors.Is(err, errTooManyRedirects) {
 				time.Sleep(c.calculateBackoff(attempt, nil))
 				continue
 			}
